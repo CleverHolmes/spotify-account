@@ -13,6 +13,8 @@ import sys
 
 threads = []
 
+headless = True
+
 proxy_server = "http://49fcb87045f3a57acb4b6f0983876ce4caea018d:autoparse=true@proxy.zenrows.com"
 proxy_port = 8001
 
