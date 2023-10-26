@@ -2,3 +2,13 @@ venv
 node_modules
 dist
 build
+spotify.zip
+spotify.7z
+audio.mp3
+audio.wav
+single.spec
+multi.spec
+result.txt
+ffmpeg.zip
+multi.ico
+single.ico

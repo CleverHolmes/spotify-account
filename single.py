@@ -3,13 +3,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from capmonster_python import RecaptchaV2Task
 import inquirer
+import requests
+import pydub
+import speech_recognition as sr
 import os
 from time import sleep
 from time import time
 import random
 import string
-import threading
-import sys
 
 threads = []
 
@@ -43,6 +44,9 @@ class spotify:
         self.day = random.randint(1, 30)
         self.year = random.randint(1994, 2006)
         self.gender = gender_list[random.randint(0, 1)]
+
+    def delay(self, driver, waiting_time=5):
+        driver.implicitly_wait(waiting_time)
 
     def bot(self):
         options = Options()
@@ -106,30 +110,74 @@ class spotify:
 
         sleep(5)
 
-        website_url = driver.current_url
-        iframe = driver.find_element(By.CSS_SELECTOR, 'div[class="g-recaptcha"]')
-        website_key = iframe.get_attribute('data-sitekey')
-
-        capmonster = RecaptchaV2Task(self.api)
-        task_id = capmonster.create_task(website_url, website_key, no_cache=True)
-        result = capmonster.join_task_result(task_id).get('gRecaptchaResponse')
-        print(f'account {self.index}: Received result')
-        print(result)
-        driver.execute_script(f"document.querySelector('#g-recaptcha-response').value = '{result}';")
-
         driver.switch_to.frame(0)
         sleep(1)
 
         driver.find_element(By.CSS_SELECTOR, 'div[class="recaptcha-checkbox-border"]').click()
-        sleep(1)
-
+        print(f'account {self.index}: Checked button')
+        sleep(3)
+        
         driver.switch_to.default_content()
         sleep(1)
-        
+
+        status = driver.find_element(By.CSS_SELECTOR, 'textarea[id="g-recaptcha-response"]').get_attribute("value")
+        if status == "":
+        # -------------------------
+            print(f'account {self.index}: Unpassed')
+
+            driver.switch_to.frame(2)
+            self.delay(driver, 1)
+            
+            driver.find_element(By.CSS_SELECTOR, 'button[id="recaptcha-audio-button"]').click()
+            print(f'account {self.index}: Audio button')
+            self.delay(driver, 1)
+
+            src = driver.find_element(By.ID, 'audio-source').get_attribute('src')
+            name = "audio"
+            path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), f"{name}.mp3"))
+            path_to_wav = os.path.normpath(os.path.join(os.getcwd(), f"{name}.wav"))
+            file_name = str(name) + ".mp3"     
+
+            with open(file_name, "wb") as file:         # open in binary mode 
+                response = requests.get(src)            # get request 
+                self.delay(driver, 1)
+
+                file.write(response.content) 
+
+            sound = pydub.AudioSegment.from_mp3(path_to_mp3)
+            sound.export(path_to_wav, format="wav")
+            sample_audio = sr.AudioFile(path_to_wav)
+            print(f'account {self.index}: Audio downloaded')
+
+
+            self.delay(driver, 5)
+            r = sr.Recognizer()
+            with sample_audio as source:
+                audio = r.record(source)
+            key = r.recognize_google(audio)
+            print(f'account {self.index}: Audio converted')
+
+            driver.find_element(By.CSS_SELECTOR, 'input[id="audio-response"]').send_keys(key)
+            print(f'account {self.index}: Answer input ({key})')
+            self.delay(driver, 1)
+
+            driver.find_element(By.CSS_SELECTOR, 'button[id="recaptcha-verify-button"]').click()
+            print(f'account {self.index}: Captcha verify')
+            self.delay(driver, 5)
+
+            driver.switch_to.default_content()
+            sleep(1)
+        # ---------------------------
+
         driver.find_element(By.CSS_SELECTOR, 'button[data-encore-id="buttonPrimary"]').click()
+        print(f'account {self.index}: Submit')
         sleep(5)
+
         driver.quit()
         print(f'account {self.index}: Finished')
+
+        os.remove(path_to_mp3)
+        os.remove(path_to_wav)
         
         file_name = "result.txt"
 
@@ -141,10 +189,6 @@ class spotify:
         else:
             with open(file_name, 'w') as file:
                 file.write(f"{data}\n")
-def custom_excepthook(exctype, value, traceback):
-    print(f"Exception of type {exctype} occurred with value {value}")
-
-sys.excepthook = custom_excepthook
 
 def inq():
     questions = [
@@ -173,15 +217,14 @@ inq()
 
 user_input = input("Please enter a value: ")
 
-try:
-    for i in range(int(user_input)):
-        thread = threading.Thread(target=run,args=(i,))
-        thread.start()
-        threads.append(thread)
+for i in range(int(user_input)):
+    try:
+        run(i)
 
-    for thread in threads:
-        thread.join()
+    except KeyboardInterrupt:
+        print("User stopped")
+        break
 
-except:
-    print("User stopped")
-
+    except Exception as e:
+        print(e)
+        continue
