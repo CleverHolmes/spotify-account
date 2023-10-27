@@ -13,6 +13,7 @@ import random
 import string
 import threading
 import sys
+import datetime
 
 threads = []
 
@@ -136,11 +137,16 @@ class spotify:
 
             src = driver.find_element(By.ID, 'audio-source').get_attribute('src')
             name = "audio"
-            path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), f"{name}.mp3"))
-            path_to_wav = os.path.normpath(os.path.join(os.getcwd(), f"{name}.wav"))
-            file_name = str(name) + ".mp3"     
+            today = datetime.date.today()
+            current_time = datetime.datetime.now().time()
+            hms = current_time.strftime("%H%M%S")
+            dm = today.strftime("%m%d")
+            dir = dm + hms
+            os.mkdir(os.path.normpath(os.path.join(os.getcwd(), dir)))
+            path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), dir, f"{name}.mp3"))
+            path_to_wav = os.path.normpath(os.path.join(os.getcwd(), dir, f"{name}.wav"))
 
-            with open(file_name, "wb") as file:         # open in binary mode 
+            with open(path_to_mp3, "wb") as file:         # open in binary mode 
                 response = requests.get(src)            # get request 
                 self.delay(driver, 1)
 
@@ -177,10 +183,11 @@ class spotify:
 
         driver.quit()
         print(f'account {self.index}: Finished')
-        
+
         os.remove(path_to_mp3)
         os.remove(path_to_wav)
-        
+        os.rmdir(os.path.normpath(os.path.join(os.getcwd(), dir)))
+
         file_name = "result.txt"
 
         data = f'{self.email}:{self.pwd}'
