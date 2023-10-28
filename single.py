@@ -50,7 +50,18 @@ class spotify:
         driver.implicitly_wait(waiting_time)
 
     def bot(self):
-        print(f'account {self.index}: Start')
+        print(f'''account {self.index}: Start
+  /$$$$$$                        /$$     /$$  /$$$$$$          
+ /$$__  $$                      | $$    |__/ /$$__  $$         
+| $$  \__/  /$$$$$$   /$$$$$$  /$$$$$$   /$$| $$  \__//$$   /$$
+|  $$$$$$  /$$__  $$ /$$__  $$|_  $$_/  | $$| $$$$   | $$  | $$
+ \____  $$| $$  \ $$| $$  \ $$  | $$    | $$| $$_/   | $$  | $$
+ /$$  \ $$| $$  | $$| $$  | $$  | $$ /$$| $$| $$     | $$  | $$
+|  $$$$$$/| $$$$$$$/|  $$$$$$/  |  $$$$/| $$| $$     |  $$$$$$$
+ \______/ | $$____/  \______/    \___/  |__/|__/      \____  $$
+          | $$                                        /$$  | $$
+          | $$                                       |  $$$$$$/
+          |__/                                        \______/ ''')
 
         options = Options()
         options.add_argument(f'--proxy-server=https://{proxy_server}:{proxy_port}')
