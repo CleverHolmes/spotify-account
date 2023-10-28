@@ -31,18 +31,16 @@ class spotify:
         pass
 
     def info_gen(self):
-        letters_num = string.ascii_letters + string.digits
-        low_letters = string.ascii_lowercase
+        letters = string.ascii_lowercase + string.ascii_uppercase 
         up_letters = string.ascii_uppercase
-        low_num_letters = string.ascii_lowercase + string.digits
         num = string.digits
 
         gender_list = ['gender_option_male', 'gender_option_female', 'gender_option_non_binary', 'gender_option_other', 'gender_option_prefer_not_to_say']
 
         self.api = 'efad4a1d9c2b6d35313f22d3d67195b4'
-        self.email = ''.join(random.choice(low_letters) for _ in range(8)) + ''.join(random.choice(num) for _ in range(4))
-        self.pwd = ''.join(random.choice(low_letters) for _ in range(4)) + ''.join(random.choice(up_letters) for _ in range(4)) + ''.join(random.choice(num) for _ in range(4))
-        self.username = ''.join(random.choice(low_letters) for _ in range(6)) + '_' + ''.join(random.choice(num) for _ in range(3))
+        self.email = ''.join(random.choice(letters) for _ in range(12)) + ''.join(random.choice(num) for _ in range(6))
+        self.pwd = ''.join(random.choice(letters) for _ in range(4)) + ''.join(random.choice(up_letters) for _ in range(4)) + ''.join(random.choice(num) for _ in range(4))
+        self.username = ''.join(random.choice(letters) for _ in range(6)) + '_' + ''.join(random.choice(num) for _ in range(3))
         self.month = random.randint(1, 12)
         self.day = random.randint(1, 30)
         self.year = random.randint(1994, 2006)
@@ -52,34 +50,45 @@ class spotify:
         driver.implicitly_wait(waiting_time)
 
     def bot(self):
-        email.find_element(By.CSS_SELECTOR, 'button[id="btnCreateEmailAccount"]').click()
-        print(f'account {self.index}: Create email')
-        sleep(1)
-
-        email.find_element(By.CSS_SELECTOR, 'input[id="txtUserName"]').send_keys(self.email)
-        print(f'account {self.index}: Input cpanel email -> {self.email}')
-        sleep(1)
-
-        email.find_element(By.CSS_SELECTOR, 'input[id="txtEmailPassword"]').send_keys(self.pwd)
-        print(f'account {self.index}: Input cpanel pwd -> {self.pwd}')
-        sleep(1)
-
-        email.find_element(By.CSS_SELECTOR, 'button[spinner-id="spinnerCreateEmail"]').click()
-        print(f'account {self.index}: Input submit email')
-        sleep(1)
+        print(f'account {self.index}: Start')
 
         options = Options()
-
         options.add_argument(f'--proxy-server=https://{proxy_server}:{proxy_port}')
 
-        global headless
         if headless:
             options.add_argument('--headless')
 
-        print(f'account {self.index}: Start')
-
         driver = webdriver.Chrome(options=options)
         driver.maximize_window()
+        driver.get("https://rbx115.truehost.cloud:2083/")
+
+        driver.find_element(By.CSS_SELECTOR, 'input[name="user"]').send_keys('westsid2')
+        sleep(1)
+
+        driver.find_element(By.CSS_SELECTOR, 'input[name="pass"]').send_keys('#JbOo2an!3EO37')
+        sleep(1)
+
+        driver.find_element(By.CSS_SELECTOR, 'button[name="login"]').click()
+        sleep(1)
+
+        driver.find_element(By.CSS_SELECTOR, 'a[id="item_email_accounts"]').click()
+        sleep(1)
+        driver.find_element(By.CSS_SELECTOR, 'button[id="btnCreateEmailAccount"]').click()
+        print(f'account {self.index}: Create email')
+        sleep(1)
+
+        driver.find_element(By.CSS_SELECTOR, 'input[id="txtUserName"]').send_keys(self.email)
+        print(f'account {self.index}: Input cpanel email -> {self.email}')
+        sleep(1)
+
+        driver.find_element(By.CSS_SELECTOR, 'input[id="txtEmailPassword"]').send_keys(self.pwd)
+        print(f'account {self.index}: Input cpanel pwd -> {self.pwd}')
+        sleep(1)
+
+        driver.find_element(By.CSS_SELECTOR, 'button[spinner-id="spinnerCreateEmail"]').click()
+        print(f'account {self.index}: Input submit email')
+        sleep(1)
+
         driver.get("https://www.spotify.com/signup")
 
         driver.find_element(By.ID, 'username').send_keys(self.email + domain)
@@ -115,6 +124,10 @@ class spotify:
 
         driver.find_element(By.CSS_SELECTOR, f'label[for={self.gender}]').click()
         print(f'account {self.index}: Input gender')
+        # sleep(1)
+
+        driver.find_element(By.CSS_SELECTOR, 'button[id="onetrust-accept-btn-handler"]').click()
+        print(f'account {self.index}: Close modal')
         # sleep(1)
 
         driver.find_element(By.CSS_SELECTOR, 'button[data-testid="submit"]').click()
@@ -155,10 +168,9 @@ class spotify:
             name = "audio"
             path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), f"{name}.mp3"))
             path_to_wav = os.path.normpath(os.path.join(os.getcwd(), f"{name}.wav"))
-            file_name = str(name) + ".mp3"     
 
-            with open(file_name, "wb") as file:         # open in binary mode 
-                response = requests.get(src)            # get request 
+            with open(path_to_mp3, "wb") as file:
+                response = requests.get(src)
                 self.delay(driver, 1)
 
                 file.write(response.content) 
@@ -186,6 +198,11 @@ class spotify:
 
             driver.switch_to.default_content()
             sleep(1)
+
+            os.remove(path_to_mp3)
+            os.remove(path_to_wav)
+            print(f'account {self.index}: Remove audio files')
+
         # ---------------------------
 
         driver.find_element(By.CSS_SELECTOR, 'button[data-encore-id="buttonPrimary"]').click()
@@ -193,12 +210,7 @@ class spotify:
         sleep(5)
 
         driver.quit()
-        print(f'account {self.index}: Finished')
-
-        if os.path.exists(path_to_mp3):
-            os.remove(path_to_mp3)
-            os.remove(path_to_wav)
-        
+        print(f'account {self.index}: Completed')
         file_name = "result.txt"
 
         data = f'{self.email}{domain}:{self.pwd}'
@@ -209,6 +221,10 @@ class spotify:
         else:
             with open(file_name, 'w') as file:
                 file.write(f"{data}\n")
+
+        print(f'account {self.index}: Saved')
+        
+        print(f'account {self.index}: Finished')
 
 def inq():
     questions = [
@@ -237,26 +253,7 @@ inq()
 
 user_input = input("Please enter a value: ")
 
-email_options = Options()
-email_options.add_argument(f'--proxy-server=https://{proxy_server}:{proxy_port}')
 
-if headless:
-    email_options.add_argument('--headless')
-email = webdriver.Chrome(options=email_options)
-email.maximize_window()
-email.get("https://rbx115.truehost.cloud:2083/")
-
-email.find_element(By.CSS_SELECTOR, 'input[name="user"]').send_keys('westsid2')
-sleep(1)
-
-email.find_element(By.CSS_SELECTOR, 'input[name="pass"]').send_keys('#JbOo2an!3EO37')
-sleep(1)
-
-email.find_element(By.CSS_SELECTOR, 'button[name="login"]').click()
-sleep(1)
-
-email.find_element(By.CSS_SELECTOR, 'a[id="item_email_accounts"]').click()
-sleep(1)
 
 for i in range(int(user_input)):
     try:
