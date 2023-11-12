@@ -1,0 +1,1 @@
+pyinstaller --onefile --icon=infinite.ico infinite.py

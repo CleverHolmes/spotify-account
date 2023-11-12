@@ -1,0 +1,1 @@
+pyinstaller --onefile --icon=single.ico single.py

@@ -1,8 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from capmonster_python import RecaptchaV2Task
-import inquirer
+from selenium.common.exceptions import NoSuchElementException
 import requests
 import pydub
 import speech_recognition as sr
@@ -14,15 +13,33 @@ import string
 import threading
 import sys
 import datetime
+import subprocess
 
 threads = []
 
-headless = True
-
-proxy_server = "http://49fcb87045f3a57acb4b6f0983876ce4caea018d:autoparse=true@proxy.zenrows.com"
-proxy_port = 8001
-
 domain = '@westside.com.ng'
+
+license = "C:\\Users\\Public\\conf"
+
+value = 1
+
+if os.path.isfile(license):
+    with open(license, 'r') as file:
+        content = file.read()
+    value = content.split('\n')[0]
+    if value != '0':
+        with open(license, 'w') as file:
+            file.write(str(int(value) - 1))
+else:
+    content = "60\n"
+    with open(license, 'w') as file:
+        file.write(content)
+
+try:
+    with open('proxy.txt', 'r') as file:
+        proxies = [line.strip() for line in file.readlines()]  
+except:
+    input("Proxy error, add proxy to 'proxy.txt' file, Press any button to stop")
 
 class spotify:
     def __init__(self, index):
@@ -37,10 +54,9 @@ class spotify:
         letters = string.ascii_lowercase + string.ascii_uppercase 
         up_letters = string.ascii_uppercase
         num = string.digits
+        self.proxy = random.choice(proxies)
 
         gender_list = ['gender_option_male', 'gender_option_female', 'gender_option_non_binary', 'gender_option_other', 'gender_option_prefer_not_to_say']
-
-        self.api = 'efad4a1d9c2b6d35313f22d3d67195b4'
         self.email = ''.join(random.choice(letters) for _ in range(12)) + ''.join(random.choice(num) for _ in range(6))
         self.pwd = ''.join(random.choice(letters) for _ in range(4)) + ''.join(random.choice(up_letters) for _ in range(4)) + ''.join(random.choice(num) for _ in range(4))
         self.username = ''.join(random.choice(letters) for _ in range(6)) + '_' + ''.join(random.choice(num) for _ in range(3))
@@ -54,6 +70,7 @@ class spotify:
 
     def bot(self):
         print(f'''account {self.index}: Start
+              
   /$$$$$$                        /$$     /$$  /$$$$$$          
  /$$__  $$                      | $$    |__/ /$$__  $$         
 | $$  \__/  /$$$$$$   /$$$$$$  /$$$$$$   /$$| $$  \__//$$   /$$
@@ -64,17 +81,16 @@ class spotify:
  \______/ | $$____/  \______/    \___/  |__/|__/      \____  $$
           | $$                                        /$$  | $$
           | $$                                       |  $$$$$$/
-          |__/                                        \______/ ''')
+          |__/                                        \______/ 
+              ''')
 
         options = Options()
-        options.add_argument(f'--proxy-server=https://{proxy_server}:{proxy_port}')
-
-        if headless:
-            options.add_argument('--headless')
+        options.add_argument(f'--proxy-server={self.proxy}')
 
         driver = webdriver.Chrome(options=options)
         driver.maximize_window()
-        driver.get("https://rbx115.truehost.cloud:2083/")
+        driver.get("http://51.83.2.241:2082/")
+        # driver.get("https://rbx115.truehost.cloud:2083/")
 
         driver.find_element(By.CSS_SELECTOR, 'input[name="user"]').send_keys('westsid2')
         sleep(1)
@@ -109,6 +125,13 @@ class spotify:
         print(f'account {self.index}: Input email -> {self.email}')
         sleep(1)
 
+        try:
+            driver.find_element(By.CSS_SELECTOR, 'button[id="onetrust-accept-btn-handler"]').click()
+            print(f'account {self.index}: Close modal')
+            # sleep(1)
+        except NoSuchElementException:
+            pass
+
         driver.find_element(By.CSS_SELECTOR, 'button[data-testid="submit"]').click()
         print(f'account {self.index}: Next')
         sleep(1)
@@ -140,9 +163,6 @@ class spotify:
         print(f'account {self.index}: Input gender')
         # sleep(1)
 
-        driver.find_element(By.CSS_SELECTOR, 'button[id="onetrust-accept-btn-handler"]').click()
-        print(f'account {self.index}: Close modal')
-        # sleep(1)
 
         driver.find_element(By.CSS_SELECTOR, 'button[data-testid="submit"]').click()
         print(f'account {self.index}: Next')
@@ -228,7 +248,7 @@ class spotify:
 
         driver.find_element(By.CSS_SELECTOR, 'button[data-encore-id="buttonPrimary"]').click()
         print(f'account {self.index}: Submit')
-        sleep(5)
+        sleep(1)
 
         driver.quit()
         print(f'account {self.index}: Completed')
@@ -247,47 +267,21 @@ class spotify:
         
         print(f'account {self.index}: Finished')
 
-def custom_excepthook(exctype, value, traceback):
-    print(f"Exception of type {exctype} occurred with value {value}")
-
-sys.excepthook = custom_excepthook
-
-def inq():
-    questions = [
-        inquirer.List(
-            'menu',
-            message="What mode are you running your bot",
-            choices=[
-                "no-headless: show the current status of creating account",
-                "headless: hide the current status of creating account"
-                ],
-        ),
-    ]
-
-    answers = inquirer.prompt(questions)
-    selected_option = answers['menu']
-    global headless
-    if selected_option == "no-headless: show the current status of creating account":
-        headless = False
-    else:
-        headless = True
-
 def run(index):
-    account = spotify(index)
+    spotify(index)
 
-inq()
+if value != '0':
+    user_input = input("Please enter a value: ")
 
-user_input = input("Please enter a value: ")
+    try:
+        for i in range(int(user_input)):
+            thread = threading.Thread(target=run,args=(i,))
+            thread.start()
+            threads.append(thread)
 
-try:
-    for i in range(int(user_input)):
-        thread = threading.Thread(target=run,args=(i,))
-        thread.start()
-        threads.append(thread)
+        for thread in threads:
+            thread.join()
 
-    for thread in threads:
-        thread.join()
-
-except:
-    print("User stopped")
+    except:
+        print("User stopped")
 

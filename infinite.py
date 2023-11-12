@@ -26,7 +26,7 @@ if os.path.isfile(license):
         with open(license, 'w') as file:
             file.write(str(int(value) - 1))
 else:
-    content = "60\n"
+    content = "30\n"
     with open(license, 'w') as file:
         file.write(content)
 
@@ -258,19 +258,19 @@ class spotify:
 def run(index):
     spotify(index)
 
-if value != '0':
-    user_input = input("Please enter a value: ")
+i = 0
 
-    for i in range(int(user_input)):
-        try:
-            start_time = time()
-            run(i)
-            print(time() - start_time)
+while True and value != '0':
+    try:
+        start_time = time()
+        run(i)
+        print(time() - start_time)
 
-        except KeyboardInterrupt:
-            print("User stopped")
-            break
+    except KeyboardInterrupt:
+        print("User stopped")
+        break
 
-        except Exception as e:
-            print(e)
-            continue
+    except Exception as e:
+        print(e)
+        continue
+    i = i + 1 
